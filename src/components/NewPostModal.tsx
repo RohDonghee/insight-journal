@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Post, INDUSTRIES } from "@/lib/supabase";
+import IndustryValueChain, { ValueChainData } from "@/components/valuechain/IndustryValueChain";
 
 type Props = {
   onClose: () => void;
@@ -20,6 +21,8 @@ export default function NewPostModal({ onClose, onSuccess }: Props) {
   const [sourceUrl, setSourceUrl] = useState("");
   const [summary, setSummary] = useState("");
   const [insight, setInsight] = useState("");
+  const [valueChain, setValueChain] = useState<ValueChainData | null>(null);
+  const [showValueChain, setShowValueChain] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -52,6 +55,7 @@ export default function NewPostModal({ onClose, onSuccess }: Props) {
           source_url: sourceUrl.trim() || null,
           summary: summary.trim(),
           insight: insight.trim(),
+          value_chain: valueChain || null,
           password,
         }),
       });
@@ -219,6 +223,23 @@ export default function NewPostModal({ onClose, onSuccess }: Props) {
                   placeholder="이 내용을 읽고 나만의 생각, 느낀 점, 업무에 적용할 수 있는 아이디어를 기록하세요."
                   rows={10}
                 />
+              </div>
+
+              {/* 밸류체인 분석 (선택) */}
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowValueChain((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium">밸류체인 분석 <span className="text-gray-400 font-normal">(선택)</span></span>
+                  <span className="text-gray-400 text-xs">{showValueChain ? "▲ 접기" : "▼ 펼치기"}</span>
+                </button>
+                {showValueChain && (
+                  <div className="px-4 pb-5 pt-2 border-t border-gray-100">
+                    <IndustryValueChain onChange={(data) => setValueChain(data)} />
+                  </div>
+                )}
               </div>
 
               {formError && (

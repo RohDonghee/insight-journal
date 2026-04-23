@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { ValueChainData } from "@/components/valuechain/IndustryValueChain";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -12,6 +13,7 @@ export type Post = {
   source_url: string | null;
   summary: string;
   insight: string;
+  value_chain: ValueChainData | null;
   created_at: string;
 };
 

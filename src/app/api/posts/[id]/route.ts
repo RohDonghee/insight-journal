@@ -1,32 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { checkPassword, checkRequiredFields } from "@/lib/api-helpers";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const body = await request.json();
-  const { password, title, industry, source_url, summary, insight } = body;
+  const { password, title, industry, source_url, summary, insight, value_chain } =
+    await request.json();
 
-  if (password !== process.env.WRITE_PASSWORD) {
-    return NextResponse.json({ error: "잘못된 비밀번호입니다." }, { status: 401 });
-  }
+  const authError = checkPassword(password);
+  if (authError) return authError;
 
-  if (!title || !summary || !insight) {
-    return NextResponse.json({ error: "필수 항목을 모두 입력해주세요." }, { status: 400 });
-  }
+  const fieldError = checkRequiredFields({ title, summary, insight });
+  if (fieldError) return fieldError;
 
   const { data, error } = await supabase
     .from("posts")
-    .update({ title, industry: industry || null, source_url: source_url || null, summary, insight })
+    .update({
+      title,
+      industry: industry || null,
+      source_url: source_url?.trim() || null,
+      summary,
+      insight,
+      value_chain: value_chain || null,
+    })
     .eq("id", params.id)
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
 
@@ -34,18 +37,13 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const body = await request.json();
-  const { password } = body;
+  const { password } = await request.json();
 
-  if (password !== process.env.WRITE_PASSWORD) {
-    return NextResponse.json({ error: "잘못된 비밀번호입니다." }, { status: 401 });
-  }
+  const authError = checkPassword(password);
+  if (authError) return authError;
 
   const { error } = await supabase.from("posts").delete().eq("id", params.id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
